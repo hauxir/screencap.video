@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+
+<select>
+<option disabled>Resolution</option>
+<option>480p</option>
+<option selected>720p</option>
+<option>1080p</option>
+</select>
+
+<select>
+<option disabled>Frame rate</option>
+<option selected>23.976</option>
+<option>25.0</option>
+<option>30.0</option>
+<option>47.952</option>
+<option>50.0</option>
+<option>60.0</option>
+</select>
+
+<button id="rec" onclick="onBtnRecordClicked()">&#128308;</button>
+<button id="stop"  onclick="onBtnStopClicked()" disabled>&#11035;</button>
+
+<a id="downloadLink" style="display:none;"></a>
+
+<script>
+  const recBtn = document.querySelector("button#rec");
+  const stopBtn = document.querySelector("button#stop");
+  const downloadLink = document.querySelector("a#downloadLink");
+  
+  let mediaRecorder, chunks;
+  
+  async function onBtnRecordClicked() {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { width: 1980, height: 1080, framerate: 25.0 },
+      audio: {
+        channelCount: 2,
+        echoCancellation: false,
+        noiseSuppression: false,
+        sampleRate: 44100,
+        sampleSize: 24,
+        latency: 0
+      },
+    });
+    stream.oninactive = onBtnStopClicked;
+    recBtn.disabled = true;
+    stopBtn.disabled = false;
+  
+    chunks = [];
+  
+    mediaRecorder = new MediaRecorder(stream, {
+      mimeType: "video/webm;codecs=h264",
+    });
+  
+    mediaRecorder.ondataavailable = function (e) {
+      if (e.data && e.data.size > 0) {
+        chunks.push(e.data);
+      }
+    };
+  
+    mediaRecorder.onstop = function () {
+      const recording = new Blob(chunks, { type: mediaRecorder.mimeType });
+      stream.getTracks().forEach(t => t.stop());
+      const rand = Math.floor(Math.random() * 10000000);
+      const name = "video_" + rand + ".webm";
+  
+      downloadLink.href = URL.createObjectURL(recording);
+      downloadLink.setAttribute("download", name);
+      downloadLink.setAttribute("name", name);
+      downloadLink.click();
+    };
+  
+    mediaRecorder.start();
+  }
+  
+  function onBtnStopClicked() {
+    mediaRecorder.stop();
+    recBtn.disabled = false;
+    stopBtn.disabled = true;
+  }
+
+</script>
+</body>
+</html>
