@@ -3,14 +3,14 @@
 <body>
 
 
-<select>
+<select id="resolution">
 <option disabled>Resolution</option>
 <option>480p</option>
 <option selected>720p</option>
 <option>1080p</option>
 </select>
 
-<select>
+<select id="framerate">
 <option disabled>Frame rate</option>
 <option selected>23.976</option>
 <option>25.0</option>
@@ -33,8 +33,16 @@
   let mediaRecorder, chunks;
   
   async function onBtnRecordClicked() {
+    const {width, height} = (() => {
+      const val = document.querySelector("#resolution").value
+      if(val === "480p") return {width: 852,height: 480};
+      if(val === "720p") return {width: 1280, height: 720};
+      return {width: 1920, height: 1080};
+      }
+    )();
+    const framerate = Number(document.querySelector("#framerate").value);
     const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { width: 1980, height: 1080, framerate: 25.0 },
+      video: { width, height, framerate },
       audio: {
         channelCount: 2,
         echoCancellation: false,
