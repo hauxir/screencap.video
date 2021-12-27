@@ -1,94 +1,121 @@
 <!DOCTYPE html>
 <html>
-<body>
-
-
-<select id="resolution">
-<option disabled>Resolution</option>
-<option>480p</option>
-<option selected>720p</option>
-<option>1080p</option>
-</select>
-
-<select id="framerate">
-<option disabled>Frame rate</option>
-<option selected>23.976</option>
-<option>25.0</option>
-<option>30.0</option>
-<option>47.952</option>
-<option>50.0</option>
-<option>60.0</option>
-</select>
-
-<button id="rec" onclick="onBtnRecordClicked()">&#128308;</button>
-<button id="stop"  onclick="onBtnStopClicked()" disabled>&#11035;</button>
-
-<a id="downloadLink" style="display:none;"></a>
-
-<script>
-  const recBtn = document.querySelector("button#rec");
-  const stopBtn = document.querySelector("button#stop");
-  const downloadLink = document.querySelector("a#downloadLink");
-  
-  let mediaRecorder, chunks;
-  
-  async function onBtnRecordClicked() {
-    const {width, height} = (() => {
-      const val = document.querySelector("#resolution").value
-      if(val === "480p") return {width: 852,height: 480};
-      if(val === "720p") return {width: 1280, height: 720};
-      return {width: 1920, height: 1080};
+  <head>
+    <title>screencap.video</title>
+    <style>
+      html,
+      body {
+        display: flex;
+        margin: auto;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        background-color: #303133;
+        color: #ced3de;
       }
-    )();
-    const framerate = Number(document.querySelector("#framerate").value);
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { width, height, framerate },
-      audio: {
-        channelCount: 2,
-        echoCancellation: false,
-        noiseSuppression: false,
-        sampleRate: 44100,
-        sampleSize: 24,
-        latency: 0
-      },
-    });
-    stream.oninactive = onBtnStopClicked;
-    recBtn.disabled = true;
-    stopBtn.disabled = false;
-  
-    chunks = [];
-  
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "video/webm;codecs=h264",
-    });
-  
-    mediaRecorder.ondataavailable = function (e) {
-      if (e.data && e.data.size > 0) {
-        chunks.push(e.data);
+      body {
+        max-width: 300px;
       }
-    };
-  
-    mediaRecorder.onstop = function () {
-      const recording = new Blob(chunks, { type: mediaRecorder.mimeType });
-      stream.getTracks().forEach(t => t.stop());
-      const rand = Math.floor(Math.random() * 10000000);
-      const name = "video_" + rand + ".webm";
-  
-      downloadLink.href = URL.createObjectURL(recording);
-      downloadLink.setAttribute("download", name);
-      downloadLink.setAttribute("name", name);
-      downloadLink.click();
-    };
-  
-    mediaRecorder.start();
-  }
-  
-  function onBtnStopClicked() {
-    mediaRecorder.stop();
-    recBtn.disabled = false;
-    stopBtn.disabled = true;
-  }
+      input,
+      button,
+      select {
+        width: 100%;
+        font-size: 24px;
+        margin: 10px;
+        text-align: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <select id="resolution">
+      <option disabled>Resolution</option>
+      <option>480p</option>
+      <option selected>720p</option>
+      <option>1080p</option>
+    </select>
 
-</script>
-</body>
+    <select id="framerate">
+      <option disabled>Frame rate</option>
+      <option selected>23.976</option>
+      <option>25.0</option>
+      <option>30.0</option>
+      <option>47.952</option>
+      <option>50.0</option>
+      <option>60.0</option>
+    </select>
+
+    <button id="rec" onclick="onBtnRecordClicked()">&#128308;</button>
+    <button id="stop" onclick="onBtnStopClicked()">&#11035;</button>
+
+    <a id="downloadLink" style="display: none"></a>
+
+    <script>
+      const recBtn = document.querySelector("button#rec");
+      const stopBtn = document.querySelector("button#stop");
+      const downloadLink = document.querySelector("a#downloadLink");
+
+      let mediaRecorder, chunks;
+
+      async function onBtnRecordClicked() {
+        const { width, height } = (() => {
+          const val = document.querySelector("#resolution").value;
+          if (val === "480p") return { width: 852, height: 480 };
+          if (val === "720p") return { width: 1280, height: 720 };
+          return { width: 1920, height: 1080 };
+        })();
+        const framerate = Number(document.querySelector("#framerate").value);
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { width, height, framerate },
+          audio: {
+            channelCount: 2,
+            echoCancellation: false,
+            noiseSuppression: false,
+            sampleRate: 44100,
+            sampleSize: 24,
+            latency: 0,
+          },
+        });
+        stream.oninactive = onBtnStopClicked;
+        recBtn.style.display = "none";
+        stopBtn.style.display = "flex";
+
+        chunks = [];
+
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "video/webm;codecs=h264",
+        });
+
+        mediaRecorder.ondataavailable = function (e) {
+          if (e.data && e.data.size > 0) {
+            chunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = function () {
+          const recording = new Blob(chunks, { type: mediaRecorder.mimeType });
+          stream.getTracks().forEach((t) => t.stop());
+          const rand = Math.floor(Math.random() * 10000000);
+          const name = "video_" + rand + ".webm";
+
+          downloadLink.href = URL.createObjectURL(recording);
+          downloadLink.setAttribute("download", name);
+          downloadLink.setAttribute("name", name);
+          downloadLink.click();
+        };
+
+        mediaRecorder.start();
+      }
+
+      function onBtnStopClicked() {
+        mediaRecorder.stop();
+        recBtn.style.display = "flex";
+        stopBtn.style.display = "none";
+      }
+      recBtn.style.display = "flex";
+      stopBtn.style.display = "none";
+    </script>
+  </body>
 </html>
