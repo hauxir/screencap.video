@@ -22,30 +22,57 @@
       button,
       select {
         width: 100%;
-        font-size: 24px;
+        font-size: 18px;
         margin: 10px;
         text-align: center;
         justify-content: center;
       }
+      fieldset {
+        display: flex;
+        border-radius: 5px;
+      }
     </style>
   </head>
   <body>
-    <select id="resolution">
-      <option disabled>Resolution</option>
-      <option>480p</option>
-      <option selected>720p</option>
-      <option>1080p</option>
-    </select>
+    <fieldset>
+      <legend>Video</legend>
+      <select id="resolution">
+        <option disabled>Resolution</option>
+        <option>480p</option>
+        <option selected>720p</option>
+        <option>1080p</option>
+      </select>
 
-    <select id="framerate">
-      <option disabled>Frame rate</option>
-      <option selected>23.976</option>
-      <option>25.0</option>
-      <option>30.0</option>
-      <option>47.952</option>
-      <option>50.0</option>
-      <option>60.0</option>
-    </select>
+      <select id="framerate">
+        <option disabled>Frame rate</option>
+        <option selected>23.976</option>
+        <option>25.0</option>
+        <option>30.0</option>
+        <option>47.952</option>
+        <option>50.0</option>
+        <option>60.0</option>
+      </select>
+    </fieldset>
+    <fieldset>
+      <legend>Audio</legend>
+      <select id="channelcount">
+        <option disabled>Channel count</option>
+        <option>1</option>
+        <option selected>2</option>
+        <option>5</option>
+      </select>
+      <select id="samplerate">
+        <option disabled>Sample rate</option>
+        <option selected>44.1k</option>
+        <option>48k</option>
+      </select>
+      <select id="samplesize">
+        <option disabled>Sample size</option>
+        <option>8</option>
+        <option>16</option>
+        <option selected>24</option>
+      </select>
+    </fieldset>
 
     <button id="rec" onclick="onBtnRecordClicked()">&#128308;</button>
     <button id="stop" onclick="onBtnStopClicked()">&#11035;</button>
@@ -67,14 +94,33 @@
           return { width: 1920, height: 1080 };
         })();
         const framerate = Number(document.querySelector("#framerate").value);
+        const channelCount = Number(
+          document.querySelector("#channelcount").value
+        );
+        const sampleRate =
+          document.querySelector("#samplerate").value === "44.1k"
+            ? 44100
+            : 48000;
+        const sampleSize = Number(document.querySelector("#samplesize").value);
+        console.log({
+          video: { width, height, framerate },
+          audio: {
+            channelCount,
+            echoCancellation: false,
+            noiseSuppression: false,
+            sampleRate,
+            sampleSize,
+            latency: 0,
+          },
+        });
         const stream = await navigator.mediaDevices.getDisplayMedia({
           video: { width, height, framerate },
           audio: {
-            channelCount: 2,
+            channelCount,
             echoCancellation: false,
             noiseSuppression: false,
-            sampleRate: 44100,
-            sampleSize: 24,
+            sampleRate,
+            sampleSize,
             latency: 0,
           },
         });
