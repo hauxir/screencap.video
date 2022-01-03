@@ -102,17 +102,6 @@
             ? 44100
             : 48000;
         const sampleSize = Number(document.querySelector("#samplesize").value);
-        console.log({
-          video: { width, height, framerate },
-          audio: {
-            channelCount,
-            echoCancellation: false,
-            noiseSuppression: false,
-            sampleRate,
-            sampleSize,
-            latency: 0,
-          },
-        });
         const stream = await navigator.mediaDevices.getDisplayMedia({
           video: { width, height, framerate },
           audio: {
